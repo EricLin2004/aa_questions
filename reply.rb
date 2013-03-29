@@ -5,10 +5,10 @@ class Reply
       FROM questions
       JOIN replies
       ON questions.id = replies.question_id
-      WHERE replies.body = '#{body}'
+      WHERE replies.body = ?
     SQL
 
-    Reply.new(QuestionDatabase.instance.execute(select).first)
+    Reply.new(QuestionDatabase.instance.execute(select, body).first)
   end
 
   def self.most_replied
@@ -36,10 +36,10 @@ class Reply
      insert = <<-SQL
        INSERT INTO replies
        (question_id, parent_id, user_id, body)
-       VALUES ('#{@question_id}', '#{@id}', '#{@user_id}', '#{text}');
+       VALUES (?, ?, ?, ?);
      SQL
 
-     QuestionDatabase.instance.execute(insert)
+     QuestionDatabase.instance.execute(insert, @question_id, @id, @user_id, text)
   end
 
 end

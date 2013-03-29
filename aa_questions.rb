@@ -15,10 +15,10 @@ class QuestionDatabase < SQLite3::Database
   end
 end
 
-
-# User.new({'fname' => 'Jonathan', 'lname' => 'Tamboer', 'is_instructor' => true}).save
-# p User.find_by_name('Jonathan','Tamboer')
-# p User.find_by_name('Eric','Lin')
+# TESTS
+# User.new({'fname' => 'Bove', 'lname' => 'Tamboer', 'is_instructor' => true}).save
+# User.all_users
+# User.find_by_name('Eric','Lin').questions
 # User.find_by_name('Eric','Lin').questions
 # p User.find_by_name('Luke','Persola')
 # p Reply.search_body("Left foot!").replies("You're wrong!")
@@ -27,4 +27,4 @@ end
 # Reply.new({parent => 2}).replies
 # Question.find_by_title('How walk?').num_likes
 # Question.most_liked(2)
- Question.most_followed(2)
+# Question.most_followed(2)

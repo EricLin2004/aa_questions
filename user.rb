@@ -5,11 +5,18 @@ class User
     select = <<-SQL
       SELECT *
       FROM users
-      WHERE fname = '#{fname}'
-      AND lname = '#{lname}'
+      WHERE fname = ?
+      AND lname = ?
     SQL
-    #debugger
-    User.new(QuestionDatabase.instance.execute(select).first)
+    User.new(QuestionDatabase.instance.execute(select, fname, lname).first)
+  end
+
+  def self.all_users
+    select = <<-SQL
+      SELECT *
+      FROM users
+    SQL
+    puts QuestionDatabase.instance.execute(select)
   end
 
   def initialize(hash)
@@ -27,10 +34,10 @@ class User
       ON (users.id = questions.user_id)
       LEFT JOIN question_likes
       ON (questions.id = question_id)
-      WHERE users.id = '#{self.id}'
+      WHERE users.id = ?
     SQL
 
-    puts QuestionDatabase.instance.execute(select)
+    puts QuestionDatabase.instance.execute(select, self.id)
   end
 
   def questions
@@ -39,10 +46,10 @@ class User
       FROM users
       JOIN questions
       ON (users.id = questions.user_id)
-      WHERE users.id = '#{self.id}'
+      WHERE users.id = ?
     SQL
 
-    puts QuestionDatabase.instance.execute(select)
+    puts QuestionDatabase.instance.execute(select, self.id)
   end
 
   def replies
@@ -51,10 +58,10 @@ class User
       FROM users
       JOIN replies
       ON (users.id = replies.user_id)
-      WHERE users.id = '#{self.id}'
+      WHERE users.id = ?
     SQL
 
-    puts QuestionDatabase.instance.execute(select)
+    puts QuestionDatabase.instance.execute(select, self.id)
   end
 
   def save
@@ -62,17 +69,17 @@ class User
       save = <<-SQL
         INSERT INTO users
         (fname, lname, is_instructor)
-        VALUES ('#{@fname}', '#{@lname}', '#{@is_instructor == true ? 1 : 0}')
+        VALUES (?, ?, ?)
       SQL
     else
       save = <<-SQL
         UPDATE users
-        SET lname         = '#{@lname}',
-            fname         = '#{@fname}',
-            is_instructor = '#{@is_instructor == true ? 1 : 0}'
+        SET fname         = ?
+            lname         = ?
+            is_instructor = ?
         WHERE id = '#{@id}'
       SQL
     end
-    QuestionDatabase.instance.execute(save)
+    QuestionDatabase.instance.execute(save, @fname, @lname, @is_instructor == true ? 1 : 0)
   end
 end

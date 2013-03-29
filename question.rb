@@ -5,10 +5,10 @@ class Question
     select = <<-SQL
       SELECT *
       FROM questions
-      WHERE title = '#{title}'
+      WHERE title = ?
     SQL
 
-    Question.new(QuestionDatabase.instance.execute(select).first)
+    Question.new(QuestionDatabase.instance.execute(select, title).first)
   end
 
   def self.most_liked(n)
@@ -50,10 +50,10 @@ class Question
       FROM questions
       JOIN question_likes
       ON questions.id = question_id
-      WHERE questions.id = '#{self.id}'
+      WHERE questions.id = ?
     SQL
 
-    puts QuestionDatabase.instance.execute(select).first
+    puts QuestionDatabase.instance.execute(select, self.id).first
   end
 
   def followers
@@ -62,10 +62,10 @@ class Question
       FROM questions
       JOIN question_followers
       ON questions.id = question_id
-      WHERE questions.id = '#{self.id}'
+      WHERE questions.id = ?
     SQL
 
-    puts QuestionDatabase.instance.execute(select).first
+    puts QuestionDatabase.instance.execute(select, self.id).first
   end
 
   def save
@@ -73,17 +73,17 @@ class Question
       save = <<-SQL
         INSERT INTO questions
         (title, user_id, body)
-        VALUES ('#{@title}', '#{@user_id}', '#{@body}')
+        VALUES (?, ?, ?)
       SQL
     else
       save = <<-SQL
         UPDATE questions
         (title, user_id, body)
-        VALUES ('#{@title}', '#{@user_id}', '#{@body}')
-        WHERE questions.id = '#{@id}'
+        VALUES (?, ?, ?)
+        WHERE questions.id = ?
       SQL
     end
 
-    QuestionDatabase.instance.execute(save)
+    QuestionDatabase.instance.execute(save, @title, @user_id, @body, @id)
   end
 end
