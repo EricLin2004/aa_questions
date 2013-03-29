@@ -83,3 +83,22 @@ INSERT INTO question_likes
          (2, 2),
          (3, 2),
        (3, 1);
+
+-- didn't finish bonus
+-- CREATE TABLE tags (
+--   id INTEGER PRIMARY KEY,
+--   question_id INTEGER,
+--   name VARCHAR(30) NOT NULL,
+-- );
+--
+-- CREATE TABLE question_tags (
+--   id INTEGER PRIMARY KEY,
+--   question_id INTEGER,
+--   tag_id INTEGER,
+-- );
+--
+-- INSERT INTO question_tags
+-- SELECT questions.id, tags.id
+-- FROM questions
+-- JOIN tags
+-- ON questions
