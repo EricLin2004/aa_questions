@@ -32,7 +32,7 @@ class User
            FROM questions
            JOIN question_likes
            ON question_likes.question_id = questions.id
-           WHERE questions.user_id = ? AND question_likes.id IS NULL
+           WHERE questions.user_id = ? AND question_likes.user_id IS NULL
       )
     SQL
 
