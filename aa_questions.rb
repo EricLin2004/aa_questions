@@ -15,7 +15,6 @@ class QuestionDatabase < SQLite3::Database
   end
 end
 
-
 # User.new({'fname' => 'Jonathan', 'lname' => 'Tamboer', 'is_instructor' => true}).save
 # User.find_by_name('Jonathan','Tamboer')
 #p User.find_by_name('Eric','Lin')
@@ -30,3 +29,4 @@ end
 # Question.most_liked(2)
 # Question.most_followed(2)
 p Reply.replies
+

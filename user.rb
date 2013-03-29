@@ -8,18 +8,7 @@ class User
       WHERE fname = ?
       AND lname = ?
     SQL
-    #debugger
     User.new(QuestionDatabase.instance.execute(select, fname, lname).first)
-  end
-
-  def self.find_by_id(id)
-    select = <<-SQL
-      SELECT *
-      FROM users
-      WHERE users.id = ?
-    SQL
-
-    User.new(QuestionDatabase.instance.execute(select, id))
   end
 
   def initialize(hash)
