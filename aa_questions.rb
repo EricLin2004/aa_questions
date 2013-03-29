@@ -18,7 +18,7 @@ end
 # User.new({'fname' => 'Jonathan', 'lname' => 'Tamboer', 'is_instructor' => true}).save
 # User.find_by_name('Jonathan','Tamboer')
 #p User.find_by_name('Eric','Lin')
-# User.find_by_name('Eric','Lin').questions
+#p User.find_by_name('Eric','Lin').questions
 # User.find_by_name('Luke','Persola')
 # Reply.search_body("Left foot!").replies("You're wrong!")
 # User.find_by_name('Luke','Persola').replies
@@ -28,5 +28,4 @@ end
 # Question.find_by_title('How walk?').followers
 # Question.most_liked(2)
 # Question.most_followed(2)
-p Reply.replies
 
