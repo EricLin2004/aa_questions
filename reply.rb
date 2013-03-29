@@ -1,27 +1,26 @@
 class Reply
-  def self.search_body(body)
-    select = <<-SQL
+  def self.find_by_id(id)
+    find = <<-SQL
       SELECT *
-      FROM questions
-      JOIN replies
-      ON questions.id = replies.question_id
-      WHERE replies.body = '#{body}'
+      FROM replies
+      WHERE id = ?
     SQL
 
-    Reply.new(QuestionDatabase.instance.execute(select).first)
+    QuestionDatabase.instance.execute(ind, id)
   end
 
   def self.most_replied
     select = <<-SQL
-      SELECT title, COALESCE(COUNT(replies.id), 0) most_replied
-      FROM questions
-      LEFT JOIN replies
-      ON questions.id = question_id
-      GROUP BY questions.title
-      ORDER BY COUNT(replies.id) DESC
+      SELECT repb.*
+      FROM replies repa
+      JOIN replies repb
+      ON repa.parent_id = repb.id
+      GROUP BY repa.parent_id
+      ORDER BY COUNT(repa.id) DESC
+      LIMIT 1
     SQL
 
-    puts QuestionDatabase.instance.execute(select).first
+    Reply.new(QuestionDatabase.instance.execute(select).first)
   end
 
   def initialize(hash)
@@ -31,15 +30,33 @@ class Reply
     @body = hash["body"]
   end
 
-  def replies(text)
-    #debugger
-     insert = <<-SQL
-       INSERT INTO replies
-       (question_id, parent_id, user_id, body)
-       VALUES ('#{@question_id}', '#{@id}', '#{@user_id}', '#{text}');
+  def replies
+     select = <<-SQL
+       SELECT *
+       FROM replies
+       WHERE parent_id = ?
      SQL
 
-     QuestionDatabase.instance.execute(insert)
+     QuestionDatabase.instance.execute(select, id).map {|hash| Reply.new(hash)}
   end
 
+def save
+    if id.nil?
+      save = <<-SQL
+        INSERT INTO replies
+        VALUES (null, ?, ?, ?, ?)
+      SQL
+      QuestionDatabase.instance.execute(save, question_id, parent_id, user_id, body)
+      @id = QuestionsDatabase.instance.last_insert_row_id
+    else
+      save = <<-SQL
+        UPDATE users
+        SET fname         = ?,
+            lname         = ?,
+            is_instructor = ?
+        WHERE id = ?
+      SQL
+      QuestionDatabase.instance.execute(save, question_id, parent_id, user_id, body)
+    end
+  end
 end

@@ -5,36 +5,48 @@ class Question
     select = <<-SQL
       SELECT *
       FROM questions
-      WHERE title = '#{title}'
+      WHERE title = ?
     SQL
 
-    Question.new(QuestionDatabase.instance.execute(select).first)
+    Question.new(QuestionDatabase.instance.execute(select, title).first)
+  end
+
+  def self.find_by_id(id)
+    select = <<-SQL
+      SELECT *
+      FROM questions
+      WHERE id = ?
+    SQL
+
+    QuestionDatabase.instance.execute(select, id)
   end
 
   def self.most_liked(n)
     select = <<-SQL
-      SELECT title, COALESCE(COUNT(question_likes.id), 0) likes
+      SELECT questions.*
       FROM questions
       LEFT JOIN question_likes
       ON questions.id = question_id
-      GROUP BY questions.title
-      ORDER BY COUNT(question_likes.id) DESC
+      GROUP BY question_id
+      ORDER BY COUNT(*) DESC
+      LIMIT ?
     SQL
 
-    puts QuestionDatabase.instance.execute(select)[0..n-1]
+    QuestionDatabase.instance.execute(select, n).map {|hash| Question.new(hash)}
   end
 
   def self.most_followed(n)
     select = <<-SQL
-      SELECT title, COALESCE(COUNT(question_followers.id), 0) followers
+      SELECT questions.*
       FROM questions
       LEFT JOIN question_followers
       ON questions.id = question_id
       GROUP BY questions.title
-      ORDER BY COUNT(question_followers.id) DESC
+      ORDER BY COUNT(*) DESC
+      LIMIT ?
     SQL
 
-    puts QuestionDatabase.instance.execute(select)[0..n-1]
+    QuestionDatabase.instance.execute(select, n).map {|hash| Question.new(hash)}
   end
 
   def initialize(hash)
@@ -47,25 +59,23 @@ class Question
   def num_likes
     select = <<-SQL
       SELECT COUNT(question_likes.id) num_likes
-      FROM questions
-      JOIN question_likes
-      ON questions.id = question_id
-      WHERE questions.id = '#{self.id}'
+      FROM question_likes
+      WHERE question_id = ?
     SQL
 
-    puts QuestionDatabase.instance.execute(select).first
+    QuestionDatabase.instance.execute(select, id)[0]['num_likes']
   end
 
   def followers
     select = <<-SQL
-      SELECT COUNT(question_followers.id) num_followers
-      FROM questions
+      SELECT users.*
+      FROM users
       JOIN question_followers
-      ON questions.id = question_id
-      WHERE questions.id = '#{self.id}'
+      ON user_id = users.id
+      WHERE question_id = ?
     SQL
 
-    puts QuestionDatabase.instance.execute(select).first
+    QuestionDatabase.instance.execute(select, id).map {|hash| User.new(hash)}
   end
 
   def save
@@ -73,17 +83,30 @@ class Question
       save = <<-SQL
         INSERT INTO questions
         (title, user_id, body)
-        VALUES ('#{@title}', '#{@user_id}', '#{@body}')
+        VALUES (?, ?, ?)
       SQL
+      QuestionDatabase.instance.execute(save, title, user_id, body)
+      @id = QuestionsDatabase.instance.last_insert_row_id
     else
       save = <<-SQL
         UPDATE questions
         (title, user_id, body)
-        VALUES ('#{@title}', '#{@user_id}', '#{@body}')
-        WHERE questions.id = '#{@id}'
+        VALUES (?, ?, ?)
+        WHERE questions.id = ?
       SQL
+      QuestionDatabase.instance.execute(save, title, user_id, body, id)
     end
+  end
 
-    QuestionDatabase.instance.execute(save)
+  def asking_student
+    select = <<-SQL
+      SELECT users.*
+      FROM users
+      JOIN questions
+      ON questions.user_id = users.id
+      WHERE questions.id = ?
+    SQL
+
+    User.new(QuestionDatabase.instance.execute(select,id).first)
   end
 end

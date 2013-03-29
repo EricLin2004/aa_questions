@@ -1,3 +1,10 @@
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS questions;
+DROP TABLE IF EXISTS question_followers;
+DROP TABLE IF EXISTS replies;
+DROP TABLE IF EXISTS question_likes;
+DROP TABLE IF EXISTS question_actions;
+
 CREATE TABLE users (
   id INTEGER PRIMARY KEY,
   fname VARCHAR(30) NOT NULL,
@@ -5,25 +12,13 @@ CREATE TABLE users (
   is_instructor ENUM(0,1) NOT NULL
 );
 
-INSERT INTO users
-  (fname, lname, is_instructor)
-  VALUES ('Luke', 'Persola', 1),
-         ('Eric', 'Lin', 0);
-
 CREATE TABLE questions (
   id INTEGER PRIMARY KEY,
   title VARCHAR(100),
   user_id INTEGER,
   body TEXT,
-
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
-
-INSERT INTO questions
-  (title, user_id, body)
-  VALUES ('How database?', 2, "How do I do a thing?"),
-         ('How walk?', 1, "Are legs be walk?"),
-         ('How talk?', 1, "Talking?");
 
 CREATE TABLE question_followers (
   id INTEGER PRIMARY KEY,
@@ -33,11 +28,6 @@ CREATE TABLE question_followers (
   FOREIGN KEY (question_id) REFERENCES questions(id),
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
-
-INSERT INTO question_followers
-  (question_id, user_id)
-  VALUES (2, 2),
-         (2, 1);
 
 CREATE TABLE replies (
   id INTEGER PRIMARY KEY,
@@ -50,13 +40,6 @@ CREATE TABLE replies (
   FOREIGN KEY (question_id) REFERENCES questions(id),
   FOREIGN KEY (user_id)  REFERENCES users(id)
 );
-
-INSERT INTO replies
-  (question_id, parent_id, user_id, body)
-  VALUES (2, null, 1, "Left foot!"),
-         (2, null, 2, "Right foot!"),
-         (2, 1, 2, "Me right too!"),
-         (1, null, 2, "SQL make computer!");
 
 CREATE TABLE question_actions (
   id INTEGER PRIMARY KEY,
@@ -77,12 +60,50 @@ CREATE TABLE question_likes (
   FOREIGN KEY (user_id)  REFERENCES users(id)
 );
 
+INSERT INTO users
+     VALUES (null, 'Eric', 'Lin', 0);
+
+INSERT INTO users
+     VALUES (null, 'Luke', 'Persola', 1);
+
+INSERT INTO questions
+     VALUES (null, 'How database?', 2, "How do I do a thing?");
+
+INSERT INTO questions
+     VALUES (null, 'How walk?', 1, "Are legs be walk?");
+
+INSERT INTO questions
+     VALUES (null, 'How talk?', 1, "Talking?");
+
+INSERT INTO question_followers
+     VALUES (null, 2, 2);
+
+INSERT INTO question_followers
+     VALUES (null, 2, 1);
+
+INSERT INTO replies
+     VALUES (null, 2, null, 1, "Left foot!");
+
+INSERT INTO replies
+     VALUES (null, 2, null, 2, "Right foot!");
+
+INSERT INTO replies
+     VALUES (null, 2, 1, 2, "Me right too!");
+
+INSERT INTO replies
+     VALUES (null, 1, null, 2, "SQL make computer!");     
+
 INSERT INTO question_likes
-  (question_id, user_id)
-  VALUES (2, 1),
-         (2, 2),
-         (3, 2),
-       (3, 1);
+     VALUES (null, 2, 1);
+
+INSERT INTO question_likes
+     VALUES (null, 2, 2);
+
+INSERT INTO question_likes
+     VALUES (null, 3, 2);
+
+INSERT INTO question_likes
+     VALUES (null, 3, 1);
 
 -- didn't finish bonus
 -- CREATE TABLE tags (
