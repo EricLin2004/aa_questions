@@ -22,7 +22,8 @@ CREATE TABLE questions (
 INSERT INTO questions
   (title, user_id, body)
   VALUES ('How database?', 2, "How do I do a thing?"),
-         ('How walk?', 1, "Are legs be walk?");
+         ('How walk?', 1, "Are legs be walk?"),
+         ('How talk?', 1, "Talking?");
 
 CREATE TABLE question_followers (
   id INTEGER PRIMARY KEY,
@@ -79,4 +80,6 @@ CREATE TABLE question_likes (
 INSERT INTO question_likes
   (question_id, user_id)
   VALUES (2, 1),
-         (2, 2);
+         (2, 2),
+         (3, 2),
+       (3, 1);

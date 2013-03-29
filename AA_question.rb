@@ -1,5 +1,8 @@
 require 'sqlite3'
 require 'singleton'
+require 'debugger'
+require './reply'
+require './question'
 
 class QuestionDatabase < SQLite3::Database
   include Singleton
@@ -12,6 +15,8 @@ class QuestionDatabase < SQLite3::Database
 end
 
 class User
+  attr_reader :id
+
   def self.find_by_name(fname,lname)
     select = <<-SQL
       SELECT *
@@ -19,7 +24,7 @@ class User
       WHERE fname = '#{fname}'
       AND lname = '#{lname}'
     SQL
-
+    #debugger
     User.new(QuestionDatabase.instance.execute(select).first)
   end
 
@@ -29,112 +34,75 @@ class User
     @lname = hash["lname"]
     @is_instructor = hash["is_instructor"] == 0 ? false : true
   end
-end
 
-p User.find_by_name('Eric', 'Lin')
-
-class Question
-  attr_reader :id
-  def self.find_by_title(title)
-    select = <<-SQL
-      SELECT *
-      FROM questions
-      WHERE title = '#{title}'
-    SQL
-
-    Question.new(QuestionDatabase.instance.execute(select).first)
-  end
-
-  def self.most_liked(n)
-    select = <<-SQL
-      SELECT title, COALESCE(COUNT(question_likes.id), 0) likes
-      FROM questions
+  def average_karma
+    select = <<-SQL #rounds down
+      SELECT COUNT(question_likes.id) / COUNT(DISTINCT questions.title) average_karma
+      FROM users
+      JOIN questions
+      ON (users.id = questions.user_id)
       LEFT JOIN question_likes
-      ON questions.id = question_id
-      GROUP BY questions.title
-      ORDER BY COUNT(question_likes.id) DESC
-    SQL
-
-    puts QuestionDatabase.instance.execute(select)[0..n-1]
-  end
-
-  def self.most_followed(n)
-    select = <<-SQL
-      SELECT title, COALESCE(COUNT(question_followers.id), 0) followers
-      FROM questions
-      LEFT JOIN question_followers
-      ON questions.id = question_id
-      GROUP BY questions.title
-      ORDER BY COUNT(question_followers.id) DESC
-    SQL
-
-    puts QuestionDatabase.instance.execute(select)[0..n-1]
-  end
-
-  def initialize(hash)
-    @id = hash["id"]
-    @title = hash["title"]
-    @user_id = hash["user_id"]
-    @body = hash["body"]
-  end
-
-  def num_likes
-    select = <<-SQL
-      SELECT COUNT(question_likes.id) num_likes
-      FROM questions
-      JOIN question_likes
-      ON questions.id = question_id
-      WHERE questions.id = '#{self.id}'
-    SQL
-
-    puts QuestionDatabase.instance.execute(select).first
-  end
-
-  def followers
-    select = <<-SQL
-      SELECT COUNT(question_followers.id) num_followers
-      FROM questions
-      JOIN question_followers
-      ON questions.id = question_id
-      WHERE questions.id = '#{self.id}'
-    SQL
-
-    puts QuestionDatabase.instance.execute(select).first
-  end
-end
-
-class Reply
-  def self.most_replied
-    select = <<-SQL
-      SELECT title, COALESCE(COUNT(replies.id), 0) most_replied
-      FROM questions
-      LEFT JOIN replies
-      ON questions.id = question_id
-      GROUP BY questions.title
-      ORDER BY COUNT(replies.id) DESC
+      ON (questions.id = question_id)
+      WHERE users.id = '#{self.id}'
     SQL
 
     puts QuestionDatabase.instance.execute(select)
   end
 
+  def questions
+    select = <<-SQL #rounds down
+      SELECT questions.title
+      FROM users
+      JOIN questions
+      ON (users.id = questions.user_id)
+      WHERE users.id = '#{self.id}'
+    SQL
 
-
-  def initialize(hash)
-    @id = hash["id"]
-    @question_id = hash["question_id"]
-    @user_id = hash["user_id"]
-    @body = hash["body"]
+    puts QuestionDatabase.instance.execute(select)
   end
 
   def replies
-    insert = <<-SQL
-      INSERT INTO question_replies
-
+    select = <<-SQL #rounds down
+      SELECT replies.body
+      FROM users
+      JOIN replies
+      ON (users.id = replies.user_id)
+      WHERE users.id = '#{self.id}'
     SQL
+
+    puts QuestionDatabase.instance.execute(select)
+  end
+
+  def save
+    if @id.nil?
+      save = <<-SQL
+        INSERT INTO users
+        (fname, lname, is_instructor)
+        VALUES ('#{@fname}', '#{@lname}', '#{@is_instructor == true ? 1 : 0}')
+      SQL
+    else
+      save = <<-SQL
+        UPDATE users
+        SET lname         = '#{@lname}',
+            fname         = '#{@fname}',
+            is_instructor = '#{@is_instructor == true ? 1 : 0}'
+        WHERE id = '#{@id}'
+      SQL
+    end
+    QuestionDatabase.instance.execute(save)
   end
 end
 
-Reply.most_replied
+
+User.new({'fname' => 'Jonathan', 'lname' => 'Tamboer', 'is_instructor' => true}).save
+p User.find_by_name('Jonathan','Tamboer')
+#p User.find_by_name('Eric','Lin')
+# User.find_by_name('Eric','Lin').questions
+#p User.find_by_name('Luke','Persola')
+# p Reply.search_body("Left foot!").replies("You're wrong!")
+# User.find_by_name('Luke','Persola').replies
+# Reply.most_replied
+# Reply.new({parent => 2}).replies
 # Question.find_by_title('How walk?').num_likes
 # Question.most_liked(2)
 # Question.most_followed(2)
