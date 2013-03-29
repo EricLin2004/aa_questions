@@ -60,6 +60,20 @@ CREATE TABLE question_likes (
   FOREIGN KEY (user_id)  REFERENCES users(id)
 );
 
+CREATE TABLE tags (
+  id INTEGER PRIMARY KEY,
+  name VARCHAR(20)
+);
+
+CREATE TABLE question_tags (
+  id INTEGER PRIMARY KEY,
+  question_id INTEGER,
+  tag_id INTEGER,
+
+  FOREIGN KEY (question_id) REFERENCES questions(id),
+  FOREIGN KEY (tag_id) REFERENCES tags(id)
+)
+
 INSERT INTO users
      VALUES (null, 'Eric', 'Lin', 0);
 
@@ -104,22 +118,3 @@ INSERT INTO question_likes
 
 INSERT INTO question_likes
      VALUES (null, 3, 1);
-
--- didn't finish bonus
--- CREATE TABLE tags (
---   id INTEGER PRIMARY KEY,
---   question_id INTEGER,
---   name VARCHAR(30) NOT NULL,
--- );
---
--- CREATE TABLE question_tags (
---   id INTEGER PRIMARY KEY,
---   question_id INTEGER,
---   tag_id INTEGER,
--- );
---
--- INSERT INTO question_tags
--- SELECT questions.id, tags.id
--- FROM questions
--- JOIN tags
--- ON questions

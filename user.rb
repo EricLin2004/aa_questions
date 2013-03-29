@@ -20,16 +20,23 @@ class User
 
   def average_karma
     select = <<-SQL
-      SELECT COUNT(question_likes.id) / COUNT(DISTINCT questions.title) average_karma
-      FROM users
-      JOIN questions
-      ON (users.id = questions.user_id)
-      LEFT JOIN question_likes
-      ON (questions.id = question_id)
-      WHERE users.id = ?
+      SELECT AVG(likes) AS avg
+      FROM (
+           SELECT COUNT(*) likes #Counts all likes > 0
+           FROM questions
+           JOIN question_likes
+           ON question_likes.question_id = questions.id
+           WHERE questions.user_id = ?
+           UNION
+           SELECT 0 likes #Counts all questions with no likes.
+           FROM questions
+           JOIN question_likes
+           ON question_likes.question_id = questions.id
+           WHERE questions.user_id = ? AND question_likes.id IS NULL
+      )
     SQL
 
-    QuestionDatabase.instance.execute(select, id)
+    QuestionDatabase.instance.execute(select, id, id)[0]["avg"]
   end
 
   def questions

@@ -49,6 +49,20 @@ class Question
     QuestionDatabase.instance.execute(select, n).map {|hash| Question.new(hash)}
   end
 
+  def self.most_replies(n)
+    select = <<-SQL
+      SELECT questions.*
+      FROM questions
+      LEFT JOIN replies
+      ON questions.id = question_id
+      GROUP BY questions.title
+      ORDER BY COUNT(*) DESC
+      LIMIT ?
+    SQL
+
+    QuestionDatabase.instance.execute(select, n).map {|hash| Question.new(hash)}
+  end
+
   def initialize(hash)
     @id = hash["id"]
     @title = hash["title"]

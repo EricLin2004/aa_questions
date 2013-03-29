@@ -28,4 +28,4 @@ end
 # Question.find_by_title('How walk?').followers
 # Question.most_liked(2)
 # Question.most_followed(2)
-
+p User.find_by_name('Eric','Lin').average_karma

@@ -40,7 +40,7 @@ class Reply
      QuestionDatabase.instance.execute(select, id).map {|hash| Reply.new(hash)}
   end
 
-def save
+  def save
     if id.nil?
       save = <<-SQL
         INSERT INTO replies
@@ -58,5 +58,23 @@ def save
       SQL
       QuestionDatabase.instance.execute(save, question_id, parent_id, user_id, body)
     end
+  end
+end
+
+class Tags
+  def self.most_popular(n)
+    select = <<-SQL
+      SELECT questions.*
+      FROM questions
+      JOIN question_tags
+      ON questions.id = question_tags.question_id
+      JOIN tags
+      ON tags.id = question_tags.tag_id
+      WHERE tags.name = '#{el}'
+      GROUP BY questions.title
+      ORDER BY COUNT(*)
+      LIMIT ?
+    SQL
+    QuestionDatabase.instance.execute(select, n).map {|hash| Question.new(hash)}
   end
 end
